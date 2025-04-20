@@ -63,20 +63,21 @@ public class JwtFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
+
             }
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-//            logger.info("Token Expired");
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write("Token has expired");
-            throw e;
+            logger.info("Token Expired");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token has expired");
+
         }
         catch (SignatureException e)
         {
-//            logger.info("SignatureException");
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write("Token signature is invalid");
-            throw e;
+            logger.error("SignatureException");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token signature is invalid");
+
         }
 
     }
