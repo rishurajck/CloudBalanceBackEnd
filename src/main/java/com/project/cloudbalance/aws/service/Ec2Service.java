@@ -1,6 +1,9 @@
 package com.project.cloudbalance.aws.service;
 
 import com.project.cloudbalance.aws.dto.Ec2Metadata;
+import com.project.cloudbalance.entity.Accounts;
+import com.project.cloudbalance.repository.AccountsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -14,10 +17,22 @@ import software.amazon.awssdk.services.sts.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.jsonwebtoken.impl.security.EdwardsCurve.findById;
+
 @Service
 public class Ec2Service {
 
+    @Autowired
+    private AccountsRepository accountsRepository;
+
+    public List<Ec2Metadata> getEc2InstancesByAccountId(Long accountId) {
+        Accounts account = accountsRepository.findAccountsByAccountId(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found with ID: " + accountId));
+
+        return getEc2InstancesViaAssumedRole(account.getArn());
+    }
     private static final Region FIXED_REGION = Region.US_EAST_1;
+
 
     public List<Ec2Metadata> getEc2InstancesViaAssumedRole(String roleArn) {
         StsClient stsClient = StsClient.builder()

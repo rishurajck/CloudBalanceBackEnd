@@ -44,7 +44,7 @@ public class LoginService {
             userRepository.save(user);
             LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
             loginResponseDTO.setToken(token);
-            loginResponseDTO.setUsername(userOpt.get().getUsername());
+            loginResponseDTO.setFirstname(userOpt.get().getFirstname());
             loginResponseDTO.setRole(userOpt.get().getRole().name());
             log.info("Login successful");
             return ResponseEntity.ok().body(loginResponseDTO);
