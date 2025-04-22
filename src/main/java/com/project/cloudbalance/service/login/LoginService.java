@@ -45,6 +45,7 @@ public class LoginService {
             LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
             loginResponseDTO.setToken(token);
             loginResponseDTO.setFirstname(userOpt.get().getFirstname());
+            loginResponseDTO.setUsername(userOpt.get().getUsername());
             loginResponseDTO.setRole(userOpt.get().getRole().name());
             log.info("Login successful");
             return ResponseEntity.ok().body(loginResponseDTO);

@@ -7,13 +7,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/EC2")
+@RequestMapping("/EC2")
 public class Ec2Controller {
 
     @Autowired
     private Ec2Service ec2Service;
 
-    @GetMapping("/metadata/{accountId}")
+    @GetMapping("/{accountId}")
     public List<Ec2Metadata> getMetadata(@PathVariable Long accountId) {
         return ec2Service.getEc2InstancesByAccountId(accountId);
     }

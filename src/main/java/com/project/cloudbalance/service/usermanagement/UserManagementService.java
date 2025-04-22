@@ -1,9 +1,6 @@
 package com.project.cloudbalance.service.usermanagement;
 
-import com.project.cloudbalance.DTO.AccountsRequestDTO;
-import com.project.cloudbalance.DTO.CustomerResponseDTO;
-import com.project.cloudbalance.DTO.UserRequestDTO;
-import com.project.cloudbalance.DTO.UserResponseDTO;
+import com.project.cloudbalance.DTO.*;
 import com.project.cloudbalance.entity.Accounts;
 import com.project.cloudbalance.entity.Role;
 import com.project.cloudbalance.entity.User;
@@ -32,7 +29,7 @@ public class UserManagementService {
 
 
     //create user
-    public ResponseEntity<String> createUser(UserRequestDTO userRequestDTO) {
+    public ResponseEntity<?> createUser(UserRequestDTO userRequestDTO) {
         if (userRequestDTO == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Please Provide User Details Correctly");
@@ -52,7 +49,7 @@ public class UserManagementService {
             entity.setAccounts(accounts);
         }
         userRepository.save(entity);
-        return ResponseEntity.ok("User created successfully");
+        return ResponseEntity.ok().body(new ApiResponse(200, "User Created Successfully"));
     }
 
 
@@ -127,7 +124,7 @@ public class UserManagementService {
         accounts.setAccountId(accountsRequestDTO.getAccountId());
         accounts.setAccountName(accountsRequestDTO.getAccountName());
         accountsRepository.save(accounts);
-        return ResponseEntity.ok("Account created successfully");
+        return ResponseEntity.ok().body(new ApiResponse(200,"Account Created Successfully"));
     }
 
     // Update User
@@ -148,10 +145,27 @@ public class UserManagementService {
                 existingUser.setAccounts(accounts);
             }
             userRepository.save(existingUser);
-            return ResponseEntity.ok("User updated successfully");
+            return ResponseEntity.ok().body(new ApiResponse(200,"User Updated Successfully"));
         }
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+
+    }
+
+    //get specific customer account for aws
+    public ResponseEntity<?> getCustomerAccount(String username)
+    {
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent())
+        {
+            User particularUser = user.get();
+            return ResponseEntity.ok().body(particularUser.getAccounts());
+        }
+        else
+        {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
+        }
+
     }
 }

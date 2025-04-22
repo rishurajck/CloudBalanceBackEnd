@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Ec2Metadata {
-    private String instanceId;
-    private String name;
+    private String resourceId;
+    private String resourceName;
     private String region;
-    private String state;
+    private String status;
 }
