@@ -1,12 +1,10 @@
 package com.project.cloudbalance.controller.usermanagement;
 
-import com.project.cloudbalance.DTO.AccountsRequestDTO;
-import com.project.cloudbalance.DTO.CustomerResponseDTO;
-import com.project.cloudbalance.DTO.UserRequestDTO;
+import com.project.cloudbalance.dto.account.AccountsRequestDTO;
+import com.project.cloudbalance.dto.user.UserRequestDTO;
 import com.project.cloudbalance.service.usermanagement.UserManagementService;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 

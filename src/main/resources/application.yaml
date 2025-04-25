@@ -14,3 +14,10 @@ spring:
       ddl-auto: update
     show-sql: true
 
+snowflake:
+  account: YFYRZGG-BWB35436
+  username: ro_user
+  password: fRe$her@b00tc@mp2025
+  warehouse: COMPUTE_WH
+  database: aws
+  schema: cost

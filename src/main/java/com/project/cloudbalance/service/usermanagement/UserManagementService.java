@@ -1,6 +1,10 @@
 package com.project.cloudbalance.service.usermanagement;
 
-import com.project.cloudbalance.DTO.*;
+import com.project.cloudbalance.dto.account.AccountsRequestDTO;
+import com.project.cloudbalance.dto.api.ApiResponse;
+import com.project.cloudbalance.dto.customer.CustomerResponseDTO;
+import com.project.cloudbalance.dto.user.UserRequestDTO;
+import com.project.cloudbalance.dto.user.UserResponseDTO;
 import com.project.cloudbalance.entity.Accounts;
 import com.project.cloudbalance.entity.Role;
 import com.project.cloudbalance.entity.User;

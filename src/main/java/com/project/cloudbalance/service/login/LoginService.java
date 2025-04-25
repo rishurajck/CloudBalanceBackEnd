@@ -1,17 +1,14 @@
 package com.project.cloudbalance.service.login;
 
-import com.project.cloudbalance.DTO.LoginRequestDTO;
-import com.project.cloudbalance.DTO.LoginResponseDTO;
+import com.project.cloudbalance.dto.login.LoginRequestDTO;
+import com.project.cloudbalance.dto.login.LoginResponseDTO;
 import com.project.cloudbalance.entity.User;
 import com.project.cloudbalance.exception.customException.InvalidCredentialsException;
 import com.project.cloudbalance.repository.UserRepository;
-import com.project.cloudbalance.service.AuthService;
+import com.project.cloudbalance.security.AuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 

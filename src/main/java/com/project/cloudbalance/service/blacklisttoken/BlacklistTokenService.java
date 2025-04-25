@@ -1,7 +1,7 @@
 package com.project.cloudbalance.service.blacklisttoken;
 
 import com.project.cloudbalance.exception.customException.BlackListedTokenException;
-import com.project.cloudbalance.jwt.BlacklistToken;
+import com.project.cloudbalance.entity.BlacklistToken;
 import com.project.cloudbalance.repository.BlacklistTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class BlacklistTokenService {
                 blacklistedToken.setToken(token);
                 blacklistTokenRepository.save(blacklistedToken);
                 log.info("Token blacklisted successfully");
-                return ResponseEntity.ok().body("Token blacklisted successfully");
+                    return ResponseEntity.ok().body("Token blacklisted successfully");
             }
             else
             {

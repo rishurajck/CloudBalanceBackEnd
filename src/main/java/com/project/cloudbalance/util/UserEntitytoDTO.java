@@ -1,6 +1,6 @@
 package com.project.cloudbalance.util;
 
-import com.project.cloudbalance.DTO.UserRequestDTO;
+import com.project.cloudbalance.dto.user.UserRequestDTO;
 import com.project.cloudbalance.entity.Role;
 import com.project.cloudbalance.entity.User;
 import org.springframework.stereotype.Component;
