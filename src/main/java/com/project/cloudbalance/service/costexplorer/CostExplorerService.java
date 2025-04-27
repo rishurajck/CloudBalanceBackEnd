@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.Connection;
@@ -47,145 +46,89 @@ public class CostExplorerService {
         return ResponseEntity.ok(responseList);
     }
 
+    public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
+        List<Map<String, Object>> results = new ArrayList<>();
 
-//    public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
-//        List<Map<String, Object>> results = new ArrayList<>();
-//
-//        // Fetch the actual DB column name using the display name
-//        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
-//                .map(Columns::getActualName)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
-//
-//        StringBuilder query = new StringBuilder();
-//        query.append("SELECT TO_CHAR(USAGESTARTDATE, 'YYYY-MM') AS USAGE_MONTH, ")
-//                .append(groupByColumn).append(", ")
-//                .append("SUM(LINEITEM_UNBLENDEDCOST) AS TOTAL_USAGE_COST ")
-//                .append("FROM COST_EXPLORER WHERE USAGESTARTDATE BETWEEN ? AND ? ");
-//
-//        List<Object> params = new ArrayList<>();
-//        params.add(Date.valueOf(LocalDate.parse(request.getStartDate())));
-//        params.add(Date.valueOf(LocalDate.parse(request.getEndDate())));
-//
-//        Map<String, Object> filters = request.getFilters();
-//        for (Map.Entry<String, Object> entry : filters.entrySet()) {
-//            String key = entry.getKey();
-//            Object value = entry.getValue();
-//
-//            if (value instanceof List) {
-//                List<?> values = (List<?>) value;
-//                if (!values.isEmpty()) {
-//                    query.append("AND ").append(key).append(" IN (")
-//                            .append(String.join(", ", Collections.nCopies(values.size(), "?")))
-//                            .append(") ");
-//                    params.addAll(values);
-//                }
-//            } else {
-//                query.append("AND ").append(key).append(" = ? ");
-//                params.add(value);
-//            }
-//        }
-//
-//        query.append("GROUP BY TO_CHAR(USAGESTARTDATE, 'YYYY-MM'), ").append(groupByColumn).append(" ");
-//        query.append("ORDER BY USAGE_MONTH, TOTAL_USAGE_COST DESC");
-//
-//        try (Connection conn = snowflakeDataSource.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(query.toString())) {
-//
-//            for (int i = 0; i < params.size(); i++) {
-//                stmt.setObject(i + 1, params.get(i));
-//            }
-//
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                ResultSetMetaData meta = rs.getMetaData();
-//                int colCount = meta.getColumnCount();
-//
-//                while (rs.next()) {
-//                    Map<String, Object> row = new LinkedHashMap<>();
-//                    for (int i = 1; i <= colCount; i++) {
-//                        row.put(meta.getColumnLabel(i), rs.getObject(i));
-//                    }
-//                    results.add(row);
-//                }
-//            }
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
-//        }
-//
-//        return results;
-//    }
-//
-//    public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
-//        List<Map<String, Object>> results = new ArrayList<>();
-//
-//        // Get actual DB column name from display name
-//        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
-//                .map(Columns::getActualName)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
-//
-//        StringBuilder query = new StringBuilder();
-//        query.append("SELECT TO_CHAR(USAGESTARTDATE, 'YYYY-MM') AS USAGE_MONTH, ")
-//                .append(groupByColumn).append(", ")
-//                .append("SUM(LINEITEM_UNBLENDEDCOST) AS TOTAL_USAGE_COST ")
-//                .append("FROM COST_EXPLORER WHERE USAGESTARTDATE BETWEEN ? AND ? ");
-//
-//        List<Object> params = new ArrayList<>();
-//
-//        // Parse startMonth and endMonth instead of startDate and endDate
-//        LocalDate start = LocalDate.parse(request.getStartMonth() + "-01");
-//        LocalDate end = LocalDate.parse(request.getEndMonth() + "-01").withDayOfMonth(1).plusMonths(1).minusDays(1);
-//
-//        params.add(Date.valueOf(start));
-//        params.add(Date.valueOf(end));
-//
-//        Map<String, Object> filters = request.getFilters();
-//        for (Map.Entry<String, Object> entry : filters.entrySet()) {
-//            String key = entry.getKey();
-//            Object value = entry.getValue();
-//
-//            if (value instanceof List) {
-//                List<?> values = (List<?>) value;
-//                if (!values.isEmpty()) {
-//                    query.append("AND ").append(key).append(" IN (")
-//                            .append(String.join(", ", Collections.nCopies(values.size(), "?")))
-//                            .append(") ");
-//                    params.addAll(values);
-//                }
-//            } else {
-//                query.append("AND ").append(key).append(" = ? ");
-//                params.add(value);
-//            }
-//        }
-//
-//        query.append("GROUP BY TO_CHAR(USAGESTARTDATE, 'YYYY-MM'), ").append(groupByColumn).append(" ");
-//        query.append("ORDER BY USAGE_MONTH, TOTAL_USAGE_COST DESC");
-//
-//        try (Connection conn = snowflakeDataSource.getConnection();
-//             PreparedStatement stmt = conn.prepareStatement(query.toString())) {
-//
-//            for (int i = 0; i < params.size(); i++) {
-//                stmt.setObject(i + 1, params.get(i));
-//            }
-//
-//            try (ResultSet rs = stmt.executeQuery()) {
-//                ResultSetMetaData meta = rs.getMetaData();
-//                int colCount = meta.getColumnCount();
-//
-//                while (rs.next()) {
-//                    Map<String, Object> row = new LinkedHashMap<>();
-//                    for (int i = 1; i <= colCount; i++) {
-//                        row.put(meta.getColumnLabel(i), rs.getObject(i));
-//                    }
-//                    results.add(row);
-//                }
-//            }
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
-//        }
-//
-//        return results;
-//    }
+        // Get actual DB column name from display name
+        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
+                .map(Columns::getActualName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
+
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT TO_CHAR(USAGESTARTDATE, 'YYYY-MM') AS USAGE_MONTH, ")
+                .append(groupByColumn).append(", ")
+                .append("SUM(LINEITEM_UNBLENDEDCOST) AS TOTAL_USAGE_COST ")
+                .append("FROM COST_EXPLORER WHERE USAGESTARTDATE BETWEEN ? AND ? ");
+
+        List<Object> params = new ArrayList<>();
+
+        // Parse startMonth and endMonth instead of startDate and endDate
+        LocalDate start = LocalDate.parse(request.getStartMonth() + "-01");
+        LocalDate end = LocalDate.parse(request.getEndMonth() + "-01").withDayOfMonth(1).plusMonths(1).minusDays(1);
+
+        params.add(Date.valueOf(start));
+        params.add(Date.valueOf(end));
+
+        Map<String, Object> filters = request.getFilters();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (value instanceof List) {
+                List<?> values = (List<?>) value;
+                if (!values.isEmpty()) {
+                    query.append("AND ").append(key).append(" IN (")
+                            .append(String.join(", ", Collections.nCopies(values.size(), "?")))
+                            .append(") ");
+                    params.addAll(values);
+                }
+            } else {
+                query.append("AND ").append(key).append(" = ? ");
+                params.add(value);
+            }
+        }
+
+        query.append("GROUP BY TO_CHAR(USAGESTARTDATE, 'YYYY-MM'), ").append(groupByColumn).append(" ");
+        query.append("ORDER BY USAGE_MONTH, TOTAL_USAGE_COST DESC");
+
+        try (Connection conn = snowflakeDataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                int colCount = meta.getColumnCount();
+
+                while (rs.next()) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    for (int i = 1; i <= colCount; i++) {
+                        row.put(meta.getColumnLabel(i), rs.getObject(i));
+                    }
+                    results.add(row);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
+        }
+
+        return results;
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // get top5 data
 public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
     List<Map<String, Object>> results = new ArrayList<>();
 
@@ -264,13 +207,51 @@ public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, St
 
         Map<String, Object> othersRow = new LinkedHashMap<>();
         othersRow.put("USAGE_MONTH", results.get(0).get("USAGE_MONTH")); // Assuming all months are the same
-        othersRow.put("PRODUCT_PRODUCTNAME", "Others");
+        othersRow.put(groupByColumn, "Others");
         othersRow.put("TOTAL_USAGE_COST", othersCost);
 
         top5.add(othersRow);
     }
 
     return top5;
-}
+
+    }
+
+
+
+    public List<Map<String, Object>> fetchColumnData(String displayName) {
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        // Fetch the actual DB column name using displayName
+        String actualColumnName = columnRespository.findByDisplayName(displayName)
+                .map(Columns::getActualName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid column name: " + displayName));
+
+        String sql = "SELECT " + actualColumnName + " FROM COST_EXPLORER LIMIT 50";
+
+        try (Connection conn = snowflakeDataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            ResultSetMetaData meta = rs.getMetaData();
+            int colCount = meta.getColumnCount();
+
+            while (rs.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                for (int i = 1; i <= colCount; i++) {
+                    row.put(meta.getColumnLabel(i), rs.getObject(i));
+                }
+                results.add(row);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
+        }
+
+        return results;
+    }
+
+
+
 
 }
