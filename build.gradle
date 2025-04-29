@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+
 }
 
 group = 'com.project'
@@ -25,26 +26,59 @@ repositories {
 }
 
 dependencies {
+//	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-web'
+//	implementation platform("software.amazon.awssdk:bom:2.25.13") // AWS SDK BOM
+//	implementation "software.amazon.awssdk:ec2"
+//	implementation "software.amazon.awssdk:sts"
+//	implementation "software.amazon.awssdk:rds"
+//	implementation 'software.amazon.awssdk:autoscaling'
+//	compileOnly 'org.projectlombok:lombok'
+//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//	runtimeOnly 'com.mysql:mysql-connector-j'
+//	annotationProcessor 'org.projectlombok:lombok'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//	testImplementation 'org.springframework.security:spring-security-test'
+//	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+//	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+//	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+//	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+//	implementation 'net.snowflake:snowflake-jdbc:3.23.2'
+	// Spring Boot dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// AWS SDK
 	implementation platform("software.amazon.awssdk:bom:2.25.13") // AWS SDK BOM
 	implementation "software.amazon.awssdk:ec2"
 	implementation "software.amazon.awssdk:sts"
 	implementation "software.amazon.awssdk:rds"
 	implementation 'software.amazon.awssdk:autoscaling'
+
+	// Lombok (compileOnly, annotationProcessor)
 	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Spring Boot DevTools (for development only)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// MySQL connector (runtimeOnly)
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// JSON Web Token dependencies (JJWT)
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-//	implementation 'net.snowflake:snowflake-jdbc:3.16.1'
+
+	// Snowflake JDBC Driver
 	implementation 'net.snowflake:snowflake-jdbc:3.23.2'
+
+	// Test dependencies
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {

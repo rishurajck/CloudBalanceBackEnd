@@ -8,6 +8,8 @@ import com.project.cloudbalance.dto.user.UserResponseDTO;
 import com.project.cloudbalance.entity.Accounts;
 import com.project.cloudbalance.entity.Role;
 import com.project.cloudbalance.entity.User;
+import com.project.cloudbalance.exception.customException.EmailAlreadyExistsException;
+import com.project.cloudbalance.exception.customException.UserAlreadyExistsException;
 import com.project.cloudbalance.repository.AccountsRepository;
 import com.project.cloudbalance.repository.UserRepository;
 import com.project.cloudbalance.util.UserEntitytoDTO;
@@ -39,10 +41,10 @@ public class UserManagementService {
                     .body("Please Provide User Details Correctly");
         }
         if (userRepository.findByUsername(userRequestDTO.getUsername()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
         if (userRepository.findByEmail(userRequestDTO.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
 
         String password = passwordEncoder.encode(userRequestDTO.getPassword());

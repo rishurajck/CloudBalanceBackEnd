@@ -1,6 +1,7 @@
 package com.project.cloudbalance.controller.auth;
 
 import com.project.cloudbalance.dto.login.LoginRequestDTO;
+import com.project.cloudbalance.dto.login.LoginResponseDTO;
 import com.project.cloudbalance.service.login.LoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO)
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO)
     {
         return loginService.login(loginRequestDTO);
     }

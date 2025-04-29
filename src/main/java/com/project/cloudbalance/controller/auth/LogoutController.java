@@ -19,7 +19,7 @@ public class LogoutController {
 
     @PostMapping("/logout")
     @RolesAllowed({"ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_READ_ONLY"})
-    public ResponseEntity<?> logout(HttpServletRequest request)
+    public ResponseEntity<String> logout(HttpServletRequest request)
     {
         return blacklistTokenService.blacklistToken(request);
     }

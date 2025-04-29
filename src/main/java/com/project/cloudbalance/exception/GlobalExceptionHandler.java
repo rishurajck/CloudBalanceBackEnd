@@ -1,7 +1,10 @@
 package com.project.cloudbalance.exception;
 
 import com.project.cloudbalance.exception.customException.BlackListedTokenException;
+import com.project.cloudbalance.exception.customException.EmailAlreadyExistsException;
 import com.project.cloudbalance.exception.customException.InvalidCredentialsException;
+
+import com.project.cloudbalance.exception.customException.UserAlreadyExistsException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class GlobalExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token has expired");
     }
+
     @ExceptionHandler(BlackListedTokenException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<String> handleBlackListedTokenException(BlackListedTokenException e) {
@@ -41,6 +45,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleSignatureException(SignatureException e)
     {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage() + "Token invalid");
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage()); // Custom error message
+    }
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage()); // Custom error message
     }
 
 }

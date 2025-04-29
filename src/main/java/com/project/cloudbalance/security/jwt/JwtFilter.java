@@ -69,14 +69,12 @@ public class JwtFilter extends OncePerRequestFilter {
             logger.info("Token Expired");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token has expired");
-
         }
         catch (SignatureException e)
         {
             logger.error("SignatureException");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token signature is invalid");
-
         }
 
     }
