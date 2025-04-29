@@ -46,10 +46,10 @@ public class CostExplorerService {
         return ResponseEntity.ok(responseList);
     }
 
-    public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
+    // Common method to run the query
+    private List<Map<String, Object>> fetchCostData(DynamicCostRequest request, String groupByDisplayName) {
         List<Map<String, Object>> results = new ArrayList<>();
 
-        // Get actual DB column name from display name
         String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
                 .map(Columns::getActualName)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
@@ -57,12 +57,11 @@ public class CostExplorerService {
         StringBuilder query = new StringBuilder();
         query.append("SELECT TO_CHAR(USAGESTARTDATE, 'YYYY-MM') AS USAGE_MONTH, ")
                 .append(groupByColumn).append(", ")
-                .append("SUM(LINEITEM_UNBLENDEDCOST) AS TOTAL_USAGE_COST ")
+                .append("SUM(LINEITEM_USAGEAMOUNT) AS TOTAL_USAGE_COST ")
                 .append("FROM COST_EXPLORER WHERE USAGESTARTDATE BETWEEN ? AND ? ");
 
         List<Object> params = new ArrayList<>();
 
-        // Parse startMonth and endMonth instead of startDate and endDate
         LocalDate start = LocalDate.parse(request.getStartMonth() + "-01");
         LocalDate end = LocalDate.parse(request.getEndMonth() + "-01").withDayOfMonth(1).plusMonths(1).minusDays(1);
 
@@ -117,108 +116,51 @@ public class CostExplorerService {
 
         return results;
     }
-
-
-
-
-
-
-
-
-
-
-
-    // get top5 data
-public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
-    List<Map<String, Object>> results = new ArrayList<>();
-
-    // Fetch the actual DB column name using the display name
-    String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
-            .map(Columns::getActualName)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
-
-    StringBuilder query = new StringBuilder();
-    query.append("SELECT TO_CHAR(USAGESTARTDATE, 'YYYY-MM') AS USAGE_MONTH, ")
-            .append(groupByColumn).append(", ")
-            .append("SUM(LINEITEM_UNBLENDEDCOST) AS TOTAL_USAGE_COST ")
-            .append("FROM COST_EXPLORER WHERE 1=1 ");
-
-    List<Object> params = new ArrayList<>();
-
-    Map<String, Object> filters = request.getFilters();
-    for (Map.Entry<String, Object> entry : filters.entrySet()) {
-        String key = entry.getKey();
-        Object value = entry.getValue();
-
-        if (value instanceof List) {
-            List<?> values = (List<?>) value;
-            if (!values.isEmpty()) {
-                query.append("AND ").append(key).append(" IN (")
-                        .append(String.join(", ", Collections.nCopies(values.size(), "?")))
-                        .append(") ");
-                params.addAll(values);
-            }
-        } else {
-            query.append("AND ").append(key).append(" = ? ");
-            params.add(value);
-        }
+    // Just return all results as is
+    public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
+        return fetchCostData(request, groupByDisplayName);
     }
+    // Process Top 5 + Others after fetching
+    public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
+        List<Map<String, Object>> results = fetchCostData(request, groupByDisplayName);
 
-    query.append("GROUP BY TO_CHAR(USAGESTARTDATE, 'YYYY-MM'), ").append(groupByColumn).append(" ");
-    query.append("ORDER BY TOTAL_USAGE_COST DESC");
-
-    try (Connection conn = snowflakeDataSource.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(query.toString())) {
-
-        for (int i = 0; i < params.size(); i++) {
-            stmt.setObject(i + 1, params.get(i));
+        if (results.isEmpty()) {
+            return results;
         }
 
-        try (ResultSet rs = stmt.executeQuery()) {
-            ResultSetMetaData meta = rs.getMetaData();
-            int colCount = meta.getColumnCount();
+        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
+                .map(Columns::getActualName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
 
-            while (rs.next()) {
-                Map<String, Object> row = new LinkedHashMap<>();
-                for (int i = 1; i <= colCount; i++) {
-                    row.put(meta.getColumnLabel(i), rs.getObject(i));
-                }
-                results.add(row);
-            }
+        results.sort((a, b) -> Double.compare(
+                ((Number) b.get("TOTAL_USAGE_COST")).doubleValue(),
+                ((Number) a.get("TOTAL_USAGE_COST")).doubleValue()
+        ));
+
+        List<Map<String, Object>> top5 = results.stream().limit(5).collect(Collectors.toList());
+
+        if (results.size() > 5) {
+            double othersCost = results.stream()
+                    .skip(5)
+                    .mapToDouble(r -> ((Number) r.get("TOTAL_USAGE_COST")).doubleValue())
+                    .sum();
+
+            Map<String, Object> othersRow = new LinkedHashMap<>();
+            othersRow.put("USAGE_MONTH", results.get(0).get("USAGE_MONTH")); // Assuming all months are the same
+            othersRow.put(groupByColumn, "Others");
+            othersRow.put("TOTAL_USAGE_COST", othersCost);
+
+            top5.add(othersRow);
         }
 
-    } catch (Exception e) {
-        throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
-    }
-
-    // ✅ Process results: top 5 + "Others"
-    results.sort((a, b) -> Double.compare(
-            ((Number) b.get("TOTAL_USAGE_COST")).doubleValue(),
-            ((Number) a.get("TOTAL_USAGE_COST")).doubleValue()
-    ));
-
-    List<Map<String, Object>> top5 = results.stream().limit(5).collect(Collectors.toList());
-
-    if (results.size() > 5) {
-        double othersCost = results.stream()
-                .skip(5)
-                .mapToDouble(r -> ((Number) r.get("TOTAL_USAGE_COST")).doubleValue())
-                .sum();
-
-        Map<String, Object> othersRow = new LinkedHashMap<>();
-        othersRow.put("USAGE_MONTH", results.get(0).get("USAGE_MONTH")); // Assuming all months are the same
-        othersRow.put(groupByColumn, "Others");
-        othersRow.put("TOTAL_USAGE_COST", othersCost);
-
-        top5.add(othersRow);
-    }
-
-    return top5;
-
+        return top5;
     }
 
 
 
+
+
+    // get column Data
     public List<Map<String, Object>> fetchColumnData(String displayName) {
         List<Map<String, Object>> results = new ArrayList<>();
 
@@ -227,7 +169,7 @@ public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, St
                 .map(Columns::getActualName)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid column name: " + displayName));
 
-        String sql = "SELECT " + actualColumnName + " FROM COST_EXPLORER LIMIT 50";
+        String sql = "SELECT DISTINCT " + actualColumnName + " FROM COST_EXPLORER LIMIT 50";
 
         try (Connection conn = snowflakeDataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -250,8 +192,5 @@ public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, St
 
         return results;
     }
-
-
-
 
 }

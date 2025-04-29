@@ -48,9 +48,12 @@ public class UserManagementService {
         String password = passwordEncoder.encode(userRequestDTO.getPassword());
         userRequestDTO.setPassword(password);
         User entity = mapper.map(userRequestDTO);
-        if (userRequestDTO.getAccounts() != null && !userRequestDTO.getAccounts().isEmpty()) {
-            List<Accounts> accounts = accountsRepository.findAllById(userRequestDTO.getAccounts());
-            entity.setAccounts(accounts);
+
+        if ("CUSTOMER".equalsIgnoreCase(userRequestDTO.getRole())) {
+            if (userRequestDTO.getAccounts() != null && !userRequestDTO.getAccounts().isEmpty()) {
+                List<Accounts> accounts = accountsRepository.findAllById(userRequestDTO.getAccounts());
+                entity.setAccounts(accounts);
+            }
         }
         userRepository.save(entity);
         return ResponseEntity.ok().body(new ApiResponse(200, "User Created Successfully"));
@@ -143,7 +146,7 @@ public class UserManagementService {
             existingUser.setEmail(userRequestDTO.getEmail());
             existingUser.setUsername(userRequestDTO.getUsername());
             existingUser.setRole(Role.valueOf(userRequestDTO.getRole()));
-
+            existingUser.getAccounts().clear();
             if (userRequestDTO.getAccounts() != null && !userRequestDTO.getAccounts().isEmpty()) {
                 List<Accounts> accounts = accountsRepository.findAllById(userRequestDTO.getAccounts());
                 existingUser.setAccounts(accounts);

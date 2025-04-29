@@ -1,18 +1,19 @@
 package com.project.cloudbalance.security.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
 @Component
 public class JwtUtils {
-    private static final Key secretkey = Jwts.SIG.HS256.key().build();
+    private static final String SECRET_KEY = "nESidFQEtK4VoZx6FCER/kHzp4J9MjNo4v2rgatqkJC=";
+    private static final SecretKey secretkey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     private static final long expirationTime = 900000;
 
     public String generateToken(String username, String role){
@@ -45,7 +46,7 @@ public class JwtUtils {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver)
     {
         Claims claims = Jwts.parser()
-                .verifyWith((SecretKey) secretkey)
+                .verifyWith((secretkey))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
