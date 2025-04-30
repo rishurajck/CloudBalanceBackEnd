@@ -46,6 +46,46 @@ public class CostExplorerService {
         return ResponseEntity.ok(responseList);
     }
 
+
+    // Just return all results as is
+    public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
+        return fetchCostData(request, groupByDisplayName);
+    }
+    // Process Top 5 + Others after fetching
+    public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
+        List<Map<String, Object>> results = fetchCostData(request, groupByDisplayName);
+
+        if (results.isEmpty()) {
+            return results;
+        }
+
+        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
+                .map(Columns::getActualName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
+
+        results.sort((a, b) -> Double.compare(
+                ((Number) b.get("TOTAL_USAGE_COST")).doubleValue(),
+                ((Number) a.get("TOTAL_USAGE_COST")).doubleValue()
+        ));
+
+        List<Map<String, Object>> top5 = results.stream().limit(5).collect(Collectors.toList());
+
+        if (results.size() > 5) {
+            double othersCost = results.stream()
+                    .skip(5)
+                    .mapToDouble(r -> ((Number) r.get("TOTAL_USAGE_COST")).doubleValue())
+                    .sum();
+
+            Map<String, Object> othersRow = new LinkedHashMap<>();
+            othersRow.put("USAGE_MONTH", results.get(0).get("USAGE_MONTH")); // Assuming all months are the same
+            othersRow.put(groupByColumn, "Others");
+            othersRow.put("TOTAL_USAGE_COST", othersCost);
+
+            top5.add(othersRow);
+        }
+
+        return top5;
+    }
     // Common method to run the query
     private List<Map<String, Object>> fetchCostData(DynamicCostRequest request, String groupByDisplayName) {
         List<Map<String, Object>> results = new ArrayList<>();
@@ -116,48 +156,6 @@ public class CostExplorerService {
 
         return results;
     }
-    // Just return all results as is
-    public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
-        return fetchCostData(request, groupByDisplayName);
-    }
-    // Process Top 5 + Others after fetching
-    public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
-        List<Map<String, Object>> results = fetchCostData(request, groupByDisplayName);
-
-        if (results.isEmpty()) {
-            return results;
-        }
-
-        String groupByColumn = columnRespository.findByDisplayName(groupByDisplayName)
-                .map(Columns::getActualName)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid groupBy value: " + groupByDisplayName));
-
-        results.sort((a, b) -> Double.compare(
-                ((Number) b.get("TOTAL_USAGE_COST")).doubleValue(),
-                ((Number) a.get("TOTAL_USAGE_COST")).doubleValue()
-        ));
-
-        List<Map<String, Object>> top5 = results.stream().limit(5).collect(Collectors.toList());
-
-        if (results.size() > 5) {
-            double othersCost = results.stream()
-                    .skip(5)
-                    .mapToDouble(r -> ((Number) r.get("TOTAL_USAGE_COST")).doubleValue())
-                    .sum();
-
-            Map<String, Object> othersRow = new LinkedHashMap<>();
-            othersRow.put("USAGE_MONTH", results.get(0).get("USAGE_MONTH")); // Assuming all months are the same
-            othersRow.put(groupByColumn, "Others");
-            othersRow.put("TOTAL_USAGE_COST", othersCost);
-
-            top5.add(othersRow);
-        }
-
-        return top5;
-    }
-
-
-
 
 
     // get column Data

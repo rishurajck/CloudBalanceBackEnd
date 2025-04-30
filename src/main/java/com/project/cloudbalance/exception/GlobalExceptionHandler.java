@@ -3,7 +3,6 @@ package com.project.cloudbalance.exception;
 import com.project.cloudbalance.exception.customException.BlackListedTokenException;
 import com.project.cloudbalance.exception.customException.EmailAlreadyExistsException;
 import com.project.cloudbalance.exception.customException.InvalidCredentialsException;
-
 import com.project.cloudbalance.exception.customException.UserAlreadyExistsException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
