@@ -26,7 +26,7 @@ public class UserEntitytoDTO {
         entity.setUsername(dto.getUsername());
         entity.setEmail(dto.getEmail());
         entity.setPassword(dto.getPassword());
-        entity.setRole(Role.valueOf(dto.getRole()));
+        entity.setRole(Role.valueOf(dto.getRole().toUpperCase()));
         entity.setFirstname(dto.getFirstname());
         entity.setLastname(dto.getLastname());
         return entity;

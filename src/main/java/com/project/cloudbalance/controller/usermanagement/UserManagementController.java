@@ -1,12 +1,20 @@
 package com.project.cloudbalance.controller.usermanagement;
 
 import com.project.cloudbalance.dto.account.AccountsRequestDTO;
+import com.project.cloudbalance.dto.api.ApiResponse;
+import com.project.cloudbalance.dto.customer.CustomerResponseDTO;
+import com.project.cloudbalance.dto.switchuser.SwitchUserRequestDTO;
 import com.project.cloudbalance.dto.user.UserRequestDTO;
+import com.project.cloudbalance.dto.user.UserResponseDTO;
+import com.project.cloudbalance.entity.Accounts;
 import com.project.cloudbalance.service.usermanagement.UserManagementService;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping
@@ -19,50 +27,72 @@ public class UserManagementController {
 
     @PostMapping("/createuser")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createUser(@RequestBody UserRequestDTO userManagementDTO)
+    public ResponseEntity<ApiResponse> createUser(@RequestBody @Valid UserRequestDTO userManagementDTO)
     {
-        return userManagementService.createUser(userManagementDTO);
+        ApiResponse response = userManagementService.createUser(userManagementDTO);
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/usermanagement")
     @PreAuthorize("hasRole('READ_ONLY') or hasRole('ADMIN')")
-    public ResponseEntity<?> getUser()
+    public ResponseEntity<List<UserResponseDTO>> getUser()
     {
-        return userManagementService.getUser();
+        List<UserResponseDTO> response = userManagementService.getUser();
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/editUser/{id}")
     @PreAuthorize("hasRole('READ_ONLY') or hasRole('ADMIN')")
-    public ResponseEntity<?> getCustomer(@PathVariable Long id)
+    public ResponseEntity<CustomerResponseDTO> getCustomer(@PathVariable Long id)
     {
-        return userManagementService.getCustomer(id);
+        CustomerResponseDTO response = userManagementService.getCustomer(id);
+        return ResponseEntity.ok().body(response);
     }
+
 
     @GetMapping("accounts")
     @PreAuthorize("hasRole('READ_ONLY') or hasRole('ADMIN')")
-    public ResponseEntity<?> getAccounts()
+    public ResponseEntity<List<Accounts>> getAccounts()
     {
-        return userManagementService.getAccounts();
+          List<Accounts> response = userManagementService.getAccounts();
+          return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("addAccounts")
     @RolesAllowed({"hasRole('ADMIN')"})
-    public ResponseEntity<?> addAccounts(@RequestBody AccountsRequestDTO accountsRequestDTO)
+    public ResponseEntity<ApiResponse> addAccounts(@RequestBody @Valid AccountsRequestDTO accountsRequestDTO)
     {
-        return userManagementService.addAccounts(accountsRequestDTO);
+        ApiResponse response = userManagementService.addAccounts(accountsRequestDTO);
+        return ResponseEntity.ok().body(response);
     }
 
     @PutMapping("updateUser/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserRequestDTO userRequestDTO)
+    public ResponseEntity<ApiResponse> updateUser(@PathVariable Long id, @RequestBody UserRequestDTO userRequestDTO)
     {
-        return userManagementService.updateUser(id, userRequestDTO);
+        ApiResponse response = userManagementService.updateUser(id, userRequestDTO);
+        return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("account/{username}")
-    @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<?> getCustomerAccount(@PathVariable String username) {
-        return userManagementService.getCustomerAccount(username);
+    @GetMapping("/account/{username}")
+    @PreAuthorize("hasAuthority('ROLE_CUSTOMER')")
+    public ResponseEntity<List<Accounts>> getCustomerAccount(@PathVariable String username) {
+        List<Accounts> response = userManagementService.getCustomerAccount(username);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("switch-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> switchUser(@RequestBody SwitchUserRequestDTO switchUserRequestDTO)
+    {
+        return userManagementService.switchUser(switchUserRequestDTO);
+    }
+
+    @GetMapping("/admin/customers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getCustomers() {
+        List<UserResponseDTO> customers = userManagementService.getAllCustomers();
+        return ResponseEntity.ok(customers);
     }
 
 

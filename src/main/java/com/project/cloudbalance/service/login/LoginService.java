@@ -23,11 +23,13 @@ public class LoginService {
     @Autowired
     private AuthService authService;
 
-    public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO loginRequestDTO) {
-        Optional<User> userOpt = userRepository.findByUsername(loginRequestDTO.getUsername());
+    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
+
         if (loginRequestDTO.getUsername().isEmpty() || loginRequestDTO.getPassword().isEmpty()) {
             throw new InvalidCredentialsException("Username or password cannot be null");
         }
+        Optional<User> userOpt = userRepository.findByUsername(loginRequestDTO.getUsername());
+
         if (userOpt.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
@@ -35,7 +37,8 @@ public class LoginService {
         try {
             String token = authService.authenticateAndGenerateToken(
                     loginRequestDTO.getUsername(),
-                    loginRequestDTO.getPassword()
+                    loginRequestDTO.getPassword(),
+                    userOpt.get().getRole().name()
             );
             User user = userOpt.get();
             user.setLastLogin(LocalDateTime.now());
@@ -46,7 +49,7 @@ public class LoginService {
             loginResponseDTO.setUsername(userOpt.get().getUsername());
             loginResponseDTO.setRole(userOpt.get().getRole().name());
             log.info("Login successful");
-            return ResponseEntity.ok().body(loginResponseDTO);
+            return loginResponseDTO;
 
         } catch (Exception e) {
 

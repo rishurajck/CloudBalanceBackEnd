@@ -1,5 +1,6 @@
 package com.project.cloudbalance.security.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.cloudbalance.repository.BlacklistTokenRepository;
 import com.project.cloudbalance.security.AuthService;
 import com.project.cloudbalance.security.UserDetailsImpl;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -61,22 +65,25 @@ public class JwtFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities()
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                    logger.info(SecurityContextHolder.getContext());
                 }
-
             }
-            filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException e) {
-            logger.info("Token Expired");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token has expired");
         }
-        catch (SignatureException e)
+        catch (ExpiredJwtException | SignatureException e)
         {
-            logger.error("SignatureException");
+            logger.info("Token Expired");
+            ObjectMapper mapper = new ObjectMapper();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token signature is invalid");
-        }
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
 
+            Map<String, String> res = new HashMap<>();
+            res.put("status", String.valueOf(HttpStatus.UNAUTHORIZED.value()));
+            res.put("message", "Token Invalid");
+            response.getWriter().write(mapper.writeValueAsString(res));
+            return;
+        }
+        filterChain.doFilter(request, response);
     }
 
 }

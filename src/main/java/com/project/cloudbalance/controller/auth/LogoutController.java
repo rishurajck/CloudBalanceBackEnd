@@ -1,9 +1,10 @@
 package com.project.cloudbalance.controller.auth;
 
-
+import com.project.cloudbalance.dto.api.ApiResponse;
 import com.project.cloudbalance.service.blacklisttoken.BlacklistTokenService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
+import net.snowflake.client.jdbc.internal.google.protobuf.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +20,10 @@ public class LogoutController {
 
     @PostMapping("/logout")
     @RolesAllowed({"ROLE_ADMIN", "ROLE_CUSTOMER", "ROLE_READ_ONLY"})
-    public ResponseEntity<String> logout(HttpServletRequest request)
+    public ResponseEntity<ApiResponse> logout(HttpServletRequest request)
     {
-        return blacklistTokenService.blacklistToken(request);
+        ApiResponse response = blacklistTokenService.blacklistToken(request);
+        return ResponseEntity.ok().body(response);
     }
 }
 

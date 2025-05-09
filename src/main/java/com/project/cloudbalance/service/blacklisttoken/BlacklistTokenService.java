@@ -1,5 +1,6 @@
 package com.project.cloudbalance.service.blacklisttoken;
 
+import com.project.cloudbalance.dto.api.ApiResponse;
 import com.project.cloudbalance.exception.customException.BlackListedTokenException;
 import com.project.cloudbalance.entity.BlacklistToken;
 import com.project.cloudbalance.repository.BlacklistTokenRepository;
@@ -16,10 +17,9 @@ public class BlacklistTokenService {
     @Autowired
     private BlacklistTokenRepository blacklistTokenRepository;
 
-    public ResponseEntity<String> blacklistToken(HttpServletRequest request) {
+    public ApiResponse blacklistToken(HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
-
             if (authHeader != null && authHeader.startsWith("Bearer "))
             {
                 String token = authHeader.substring(7);
@@ -31,7 +31,7 @@ public class BlacklistTokenService {
                 blacklistedToken.setToken(token);
                 blacklistTokenRepository.save(blacklistedToken);
                 log.info("Token blacklisted successfully");
-                    return ResponseEntity.ok().body("Token blacklisted successfully");
+                return new ApiResponse(200,"Logged Out Successfully");
             }
             else
             {

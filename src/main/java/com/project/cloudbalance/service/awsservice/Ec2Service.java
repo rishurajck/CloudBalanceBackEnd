@@ -33,29 +33,33 @@ public class Ec2Service {
 
 
     public List<Ec2Metadata> getEc2InstancesViaAssumedRole(String roleArn) {
-        StsClient stsClient = StsClient.builder()
+        AssumeRoleResponse assumeRoleResponse;
+        try (StsClient stsClient = StsClient.builder()
                 .region(FIXED_REGION)
-                .build();
+                .build()) {
 
-        AssumeRoleRequest assumeRoleRequest = AssumeRoleRequest.builder()
-                .roleArn(roleArn)
-                .roleSessionName("springbootSession")
-                .build();
+            AssumeRoleRequest assumeRoleRequest = AssumeRoleRequest.builder()
+                    .roleArn(roleArn)
+                    .roleSessionName("springbootSession")
+                    .build();
 
-        AssumeRoleResponse assumeRoleResponse = stsClient.assumeRole(assumeRoleRequest);
+            assumeRoleResponse = stsClient.assumeRole(assumeRoleRequest);
+        }
         AwsSessionCredentials sessionCredentials = AwsSessionCredentials.create(
                 assumeRoleResponse.credentials().accessKeyId(),
                 assumeRoleResponse.credentials().secretAccessKey(),
                 assumeRoleResponse.credentials().sessionToken()
         );
 
-        Ec2Client ec2Client = Ec2Client.builder()
+        DescribeInstancesResponse response;
+        try (Ec2Client ec2Client = Ec2Client.builder()
                 .region(FIXED_REGION)
                 .credentialsProvider(StaticCredentialsProvider.create(sessionCredentials))
-                .build();
+                .build()) {
 
-        DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
-        DescribeInstancesResponse response = ec2Client.describeInstances(request);
+            DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
+            response = ec2Client.describeInstances(request);
+        }
 
         List<Ec2Metadata> ec2List = new ArrayList<>();
 

@@ -51,6 +51,7 @@ public class CostExplorerService {
     public List<Map<String, Object>> downloadData(DynamicCostRequest request, String groupByDisplayName) {
         return fetchCostData(request, groupByDisplayName);
     }
+
     // Process Top 5 + Others after fetching
     public List<Map<String, Object>> fetchDynamicData(DynamicCostRequest request, String groupByDisplayName) {
         List<Map<String, Object>> results = fetchCostData(request, groupByDisplayName);
@@ -153,7 +154,6 @@ public class CostExplorerService {
         } catch (Exception e) {
             throw new RuntimeException("Snowflake query failed: " + e.getMessage(), e);
         }
-
         return results;
     }
 
